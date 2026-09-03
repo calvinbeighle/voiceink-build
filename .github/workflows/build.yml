@@ -21,6 +21,11 @@ jobs:
         run: |
           defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidation -bool YES
           defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+      - name: Patch Makefile to skip plugin/macro validation
+        working-directory: src
+        run: |
+          sed -i '' 's|-xcconfig LocalBuild.xcconfig \\|-xcconfig LocalBuild.xcconfig -skipPackagePluginValidation -skipMacroValidation \\|' Makefile
+          grep -n 'skipPackagePluginValidation' Makefile
       - name: Build local (ad-hoc signed)
         working-directory: src
         run: make local LOCAL_CODESIGN_IDENTITY=-
