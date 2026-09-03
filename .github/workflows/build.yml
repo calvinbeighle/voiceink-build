@@ -1,0 +1,27 @@
+name: Build VoiceInk
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Upstream tag or branch to build
+        default: main
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - name: Clone upstream VoiceInk
+        run: git clone --depth 1 --branch "${{ github.event.inputs.ref }}" https://github.com/Beingpax/VoiceInk.git src
+      - name: Select latest Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app && xcodebuild -version
+      - name: Build local (ad-hoc signed)
+        working-directory: src
+        run: make local LOCAL_CODESIGN_IDENTITY=-
+      - name: Package
+        run: |
+          ls -la ~/Downloads
+          cd ~/Downloads && ditto -c -k --keepParent VoiceInk.app VoiceInk.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VoiceInk
+          path: ~/Downloads/VoiceInk.zip
